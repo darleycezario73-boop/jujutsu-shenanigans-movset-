@@ -66,10 +66,13 @@ margin-bottom:12px;
 border:1px solid #333;
 }
 
+/* ✅ CORREÇÃO DA IMAGEM */
 .card img{
 width:100%;
-height:220px;
+aspect-ratio:16/9;
 object-fit:cover;
+display:block;
+background:#000;
 }
 
 .title{
@@ -160,7 +163,6 @@ transform:scale(1.15);
 <div id="movPage">
 
 <h1>Movsets</h1>
-
 <input class="search" id="searchMov" placeholder="Pesquisar movset..." onkeyup="renderAll()">
 
 <div id="adminMov" class="hidden">
@@ -177,7 +179,6 @@ transform:scale(1.15);
 <div id="mapPage" style="display:none">
 
 <h1>Mapas</h1>
-
 <input class="search" id="searchMap" placeholder="Pesquisar mapa..." onkeyup="renderAll()">
 
 <div id="adminMap" class="hidden">
@@ -193,7 +194,6 @@ transform:scale(1.15);
 <div id="texPage" style="display:none">
 
 <h1>Textura / Malha</h1>
-
 <input class="search" id="searchTex" placeholder="Pesquisar textura ou malha..." onkeyup="renderAll()">
 
 <div id="adminTex" class="hidden">
@@ -346,23 +346,9 @@ btn.innerText="Copiado!";
 setTimeout(()=>btn.innerText="Copiar",1500);
 }
 
-function deleteMov(i){
-movs.splice(i,1);
-save();
-renderAll();
-}
-
-function deleteMap(i){
-maps.splice(i,1);
-save();
-renderAll();
-}
-
-function deleteTex(i){
-texs.splice(i,1);
-save();
-renderAll();
-}
+function deleteMov(i){ movs.splice(i,1); save(); renderAll(); }
+function deleteMap(i){ maps.splice(i,1); save(); renderAll(); }
+function deleteTex(i){ texs.splice(i,1); save(); renderAll(); }
 
 function addMov(){
 let file=movFile.files[0];
