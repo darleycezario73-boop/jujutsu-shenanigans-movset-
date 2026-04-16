@@ -43,12 +43,21 @@ color:#fff;
 cursor:pointer;
 }
 
-.search{
-padding:8px;
-font-size:12px;
-}
-
 .hidden{display:none}
+
+/* 🔥 BARRA DE PESQUISA VISÍVEL */
+.search{
+width:100%;
+padding:12px;
+margin:10px 0;
+border-radius:12px;
+border:2px solid #7c3aed;
+background:#111;
+color:#fff;
+font-size:14px;
+outline:none;
+box-shadow:0 0 10px rgba(124,58,237,0.5);
+}
 
 .nav{display:flex;gap:10px;margin:15px 0}
 .nav button{flex:1}
@@ -80,6 +89,27 @@ flex-wrap:wrap;
 }
 
 .actions button{flex:1}
+
+#discordBtn{
+position:fixed;
+bottom:15px;
+right:15px;
+width:60px;
+height:60px;
+z-index:999;
+}
+
+#discordBtn img{
+width:100%;
+height:100%;
+cursor:pointer;
+transition:0.2s;
+filter:drop-shadow(0 0 10px #7c3aed);
+}
+
+#discordBtn img:hover{
+transform:scale(1.15);
+}
 </style>
 
 </head>
@@ -111,7 +141,9 @@ flex-wrap:wrap;
 
 <div id="siteArea" class="hidden">
 
-<input id="search" class="search" placeholder="🔍 Buscar...">
+<!-- 🔍 PESQUISA -->
+
+<input id="search" class="search" placeholder="🔍 Buscar pelo nome...">
 
 <div class="nav">
 <button onclick="openPage('movPage')">Movsets</button>
@@ -165,6 +197,10 @@ flex-wrap:wrap;
 
 </div>
 </div>
+
+<a href="https://discord.gg/CYztbg3mQ6" target="_blank" id="discordBtn">
+<img src="https://cdn-icons-png.flaticon.com/512/2111/2111370.png">
+</a>
 
 <script>
 let users = JSON.parse(localStorage.getItem("users") || "{}");
@@ -303,4 +339,5 @@ r.readAsDataURL(mapFile.files[0]);
 
 </body>
 </html>
+
 
