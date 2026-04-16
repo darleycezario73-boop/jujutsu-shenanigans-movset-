@@ -30,7 +30,10 @@ letter-spacing:6px;
 text-shadow:0 0 15px rgba(124,58,237,0.7);
 }
 
-.header p{font-size:13px;color:#aaa;}
+.header p{
+font-size:13px;
+color:#aaa;
+}
 
 input,button{
 width:100%;
@@ -56,21 +59,11 @@ margin:15px 0
 
 .nav button{flex:1}
 
-.search{
-width:100%;
-padding:10px;
-margin:10px 0;
-border-radius:10px;
-border:2px solid #7c3aed;
-background:#111;
-color:#fff;
-}
-
 .card{
 background:#1a1a1a;
 border-radius:18px;
 margin-bottom:10px;
-overflow:hidden;
+overflow:visible;
 }
 
 .card img{
@@ -87,6 +80,27 @@ flex-wrap:wrap;
 }
 
 .actions button{flex:1}
+
+#discordBtn{
+position:fixed;
+bottom:15px;
+right:15px;
+width:60px;
+height:60px;
+z-index:999;
+}
+
+#discordBtn img{
+width:100%;
+height:100%;
+cursor:pointer;
+transition:0.2s;
+filter:drop-shadow(0 0 10px #7c3aed);
+}
+
+#discordBtn img:hover{
+transform:scale(1.15);
+}
 </style>
 
 </head>
@@ -100,10 +114,9 @@ flex-wrap:wrap;
 <p>Movsets exclusivos Kanja</p>
 </div>
 
-<!-- LOGIN -->
-
 <div id="loginArea">
 <h2>Login</h2>
+
 <input id="loginUser" placeholder="Nome">
 <input id="loginPass" type="password" placeholder="Senha">
 <button onclick="login()">Entrar</button>
@@ -119,21 +132,13 @@ flex-wrap:wrap;
 <p id="info"></p>
 </div>
 
-<!-- SITE -->
-
 <div id="siteArea" class="hidden">
-
-<!-- 🔍 SEARCH SEPARADA -->
-
-<input id="search" class="search" placeholder="🔍 Buscar pelo nome..." oninput="renderAll()">
 
 <div class="nav">
 <button onclick="openPage('movPage')">Movsets</button>
-<button onclick="openPage('texPage')">Texturas</button>
+<button onclick="openPage('texPage')">Malha e Textura</button>
 <button onclick="openPage('mapPage')">Mapas</button>
 </div>
-
-<!-- MOVSETS -->
 
 <div id="movPage">
 <h1>Movsets</h1>
@@ -147,10 +152,8 @@ flex-wrap:wrap;
 <div id="movList"></div>
 </div>
 
-<!-- TEXTURAS -->
-
 <div id="texPage" style="display:none;">
-<h1>Texturas</h1>
+<h1>Malha e Textura</h1>
 
 <div id="adminTex" class="hidden">
 <input id="texFile" type="file">
@@ -160,8 +163,6 @@ flex-wrap:wrap;
 
 <div id="texList"></div>
 </div>
-
-<!-- MAPAS -->
 
 <div id="mapPage" style="display:none;">
 <h1>Mapas</h1>
@@ -177,19 +178,23 @@ flex-wrap:wrap;
 </div>
 </div>
 
+<a href="https://discord.gg/CYztbg3mQ6" target="_blank" id="discordBtn">
+<img src="https://cdn-icons-png.flaticon.com/512/2111/2111370.png">
+</a>
+
 <script>
 let users = JSON.parse(localStorage.getItem("users") || "{}");
 
 if(!users["admin"]){
-users["admin"]={pass:"lunarkanja",role:"adm"};
-localStorage.setItem("users",JSON.stringify(users));
+  users["admin"] = {pass:"lunarkanja",role:"adm"};
+  localStorage.setItem("users", JSON.stringify(users));
 }
 
 let movs = JSON.parse(localStorage.getItem("movs") || "[]");
 let texs = JSON.parse(localStorage.getItem("texs") || "[]");
 let maps = JSON.parse(localStorage.getItem("maps") || "[]");
 
-let isAdmin=false;
+let isAdmin = false;
 
 function save(){
 localStorage.setItem("users",JSON.stringify(users));
@@ -198,15 +203,40 @@ localStorage.setItem("texs",JSON.stringify(texs));
 localStorage.setItem("maps",JSON.stringify(maps));
 }
 
+function toggleRegister(){
+registerBox.classList.toggle("hidden");
+}
+
+function register(){
+let u = regUser.value;
+let p = regPass.value;
+
+if(!u || !p){
+info.innerText="Preencha tudo";
+return;
+}
+
+if(users[u]){
+info.innerText="Usuário já existe";
+return;
+}
+
+users[u]={pass:p,role:"membro"};
+save();
+
+info.innerText="Conta criada!";
+}
+
 function login(){
 let u=loginUser.value;
 let p=loginPass.value;
 
-if(users[u] && users[u].pass===p){
+if(users[u] && users[u].pass === p){
+
 loginArea.classList.add("hidden");
 siteArea.classList.remove("hidden");
 
-isAdmin = users[u].role==="adm";
+isAdmin = users[u].role === "adm";
 
 if(isAdmin){
 adminMov.classList.remove("hidden");
@@ -214,20 +244,12 @@ adminTex.classList.remove("hidden");
 adminMap.classList.remove("hidden");
 }
 
+openPage("movPage");
 renderAll();
+
 }else{
 info.innerText="Login inválido";
 }
-}
-
-function toggleRegister(){
-registerBox.classList.toggle("hidden");
-}
-
-function register(){
-users[regUser.value]={pass:regPass.value,role:"membro"};
-save();
-info.innerText="Conta criada!";
 }
 
 function openPage(id){
@@ -237,31 +259,30 @@ mapPage.style.display="none";
 document.getElementById(id).style.display="block";
 }
 
-/* 🔍 SEARCH */
 function renderAll(){
-
-let s = search.value.toLowerCase();
 
 movList.innerHTML="";
 texList.innerHTML="";
 mapList.innerHTML="";
 
-movs.filter(m=>m.text.toLowerCase().includes(s)).forEach((m,i)=>{
+movs.forEach((m,i)=>{
 movList.innerHTML+=`
 <div class="card">
 <img src="${m.img}">
 <div class="actions">
 <button onclick="copyText('${m.text}',this)">Copiar</button>
+${isAdmin?`<button onclick="deleteMov(${i})">Excluir</button>`:""}
 </div>
 </div>`;
 });
 
-texs.filter(t=>t.text.toLowerCase().includes(s)).forEach((t,i)=>{
+texs.forEach((t,i)=>{
 texList.innerHTML+=`
 <div class="card">
 <img src="${t.img}">
 <div class="actions">
 <button onclick="copyText('${t.text}',this)">Copiar</button>
+${isAdmin?`<button onclick="deleteTex(${i})">Excluir</button>`:""}
 </div>
 </div>`;
 });
@@ -270,60 +291,81 @@ maps.forEach((m,i)=>{
 mapList.innerHTML+=`
 <div class="card">
 <img src="${m.img}">
+${isAdmin?`<div class="actions"><button onclick="deleteMap(${i})">Excluir</button></div>`:""}
 </div>`;
 });
 }
 
-/* 🔥 CORRIGIDO (AQUI ESTAVA O ERRO) */
+function copyText(text,btn){
+navigator.clipboard.writeText(text);
+btn.innerText="Copiado!";
+setTimeout(()=>btn.innerText="Copiar",1500);
+}
+
+function deleteMov(i){
+if(!isAdmin)return;
+movs.splice(i,1);
+save();
+renderAll();
+}
+
+function deleteTex(i){
+if(!isAdmin)return;
+texs.splice(i,1);
+save();
+renderAll();
+}
+
+function deleteMap(i){
+if(!isAdmin)return;
+maps.splice(i,1);
+save();
+renderAll();
+}
+
 function addMov(){
 if(!isAdmin)return;
 
-let file=document.getElementById("movFile").files[0];
+let file=movFile.files[0];
 if(!file) return;
 
-let r=new FileReader();
-r.onload=e=>{
+let reader=new FileReader();
+reader.onload=e=>{
 movs.push({img:e.target.result,text:movText.value});
 save();
 renderAll();
 }
-r.readAsDataURL(file);
+reader.readAsDataURL(file);
 }
 
 function addTex(){
 if(!isAdmin)return;
 
-let file=document.getElementById("texFile").files[0];
+let file=texFile.files[0];
 if(!file) return;
 
-let r=new FileReader();
-r.onload=e=>{
+let reader=new FileReader();
+reader.onload=e=>{
 texs.push({img:e.target.result,text:texText.value});
 save();
 renderAll();
 }
-r.readAsDataURL(file);
+reader.readAsDataURL(file);
 }
 
 function addMap(){
 if(!isAdmin)return;
 
-let file=document.getElementById("mapFile").files[0];
+let file=mapFile.files[0];
 if(!file) return;
 
-let r=new FileReader();
-r.onload=e=>{
+let reader=new FileReader();
+reader.onload=e=>{
 maps.push({img:e.target.result});
 save();
 renderAll();
 }
-r.readAsDataURL(file);
-}
-
-function copyText(t,b){
-navigator.clipboard.writeText(t);
-b.innerText="Copiado!";
-setTimeout(()=>b.innerText="Copiar",1500);
+reader.readAsDataURL(file);
 }
 </script>
 
