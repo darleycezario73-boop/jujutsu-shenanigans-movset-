@@ -9,37 +9,28 @@
 *{margin:0;padding:0;box-sizing:border-box}
 
 body{
-font-family:Arial,sans-serif;
+font-family:Arial;
 background:#000;
 color:#fff;
-padding:10px
+padding:10px;
 }
 
 .container{max-width:900px;margin:auto}
 
-.header{
-text-align:center;
-margin:15px 0 25px 0;
-}
+.header{text-align:center;margin:20px 0}
 
 .header h1{
-font-size:42px;
+font-size:40px;
 color:#7c3aed;
-letter-spacing:6px;
-text-shadow:0 0 15px rgba(124,58,237,0.7);
-}
-
-.header p{
-font-size:13px;
-color:#aaa;
+text-shadow:0 0 10px #7c3aed;
 }
 
 input,button{
 width:100%;
-padding:12px;
-margin:6px 0;
+padding:10px;
+margin:5px 0;
+border-radius:8px;
 border:none;
-border-radius:10px
 }
 
 button{
@@ -50,51 +41,26 @@ cursor:pointer;
 
 .hidden{display:none}
 
-.nav{
-display:flex;
-gap:10px;
-margin:15px 0
-}
-
+.nav{display:flex;gap:10px;margin:10px 0}
 .nav button{flex:1}
 
 .card{
 background:#1a1a1a;
-border-radius:18px;
+margin:10px 0;
+border-radius:10px;
 overflow:hidden;
-margin-bottom:10px;
 }
 
-.card img{
-width:100%;
-height:220px;
-object-fit:cover;
-}
+.card img{width:100%;height:200px;object-fit:cover}
 
-.actions{
-padding:10px;
-display:flex;
-flex-direction:column;
-gap:5px;
-}
+.actions{padding:10px}
 
 #discordBtn{
 position:fixed;
 bottom:15px;
 right:15px;
 width:60px;
-height:60px;
-z-index:999;
 }
-
-#discordBtn img{
-width:100%;
-height:100%;
-cursor:pointer;
-filter:drop-shadow(0 0 10px #7c3aed);
-}
-
-#discordBtn img:hover{transform:scale(1.15)}
 </style>
 </head>
 
@@ -104,26 +70,16 @@ filter:drop-shadow(0 0 10px #7c3aed);
 
 <div class="header">
 <h1>LUNAR</h1>
-<p>Movsets exclusivos Kanja</p>
+<p>Movsets e Texturas</p>
 </div>
 
 <!-- LOGIN -->
 <div id="loginArea">
-
 <h2>Login</h2>
-
-<input id="loginUser" placeholder="Nome">
+<input id="loginUser" placeholder="Email">
 <input id="loginPass" type="password" placeholder="Senha">
-
 <button onclick="login()">Entrar</button>
-<button onclick="toggleRegister()">Registrar</button>
-
-<div id="registerBox" class="hidden">
-<input id="regUser" placeholder="Novo nome">
-<input id="regPass" placeholder="Nova senha">
-<button onclick="register()">Criar Conta</button>
-</div>
-
+<button onclick="register()">Criar conta</button>
 <p id="info"></p>
 </div>
 
@@ -131,31 +87,22 @@ filter:drop-shadow(0 0 10px #7c3aed);
 <div id="siteArea" class="hidden">
 
 <div class="nav">
-<button onclick="openPage('movPage')">Movsets</button>
-<button onclick="openPage('texPage')">Malha e Textura</button>
+<button onclick="show('mov')">Movsets</button>
+<button onclick="show('tex')">Texturas</button>
 </div>
 
-<!-- MOVSETS -->
-<div id="movPage">
+<!-- MOV -->
+<div id="mov" class="page">
 
-<h2>Movsets</h2>
-
-<div id="adminMov" class="hidden">
 <input id="movFile" type="file">
-<input id="movText" placeholder="Texto do movset">
-<button onclick="addMov()">Adicionar</button>
-</div>
+<input id="movText" placeholder="Texto movset">
+<button onclick="addMov()">Adicionar Movset</button>
 
 <div id="movList"></div>
-
 </div>
 
-<!-- TEXTURA -->
-<div id="texPage">
-
-<h2>Malha e Textura</h2>
-
-<div id="adminTex" class="hidden">
+<!-- TEX -->
+<div id="tex" class="page hidden">
 
 <input id="texFile" type="file">
 
@@ -167,159 +114,182 @@ filter:drop-shadow(0 0 10px #7c3aed);
 <input id="texPeD" placeholder="Pé direito">
 <input id="texCompleto" placeholder="Completo">
 
-<button onclick="addTex()">Adicionar</button>
-
-</div>
+<button onclick="addTex()">Adicionar Textura</button>
 
 <div id="texList"></div>
-
 </div>
 
 </div>
 </div>
 
-<!-- DISCORD -->
-<a href="https://discord.gg/CYztbg3mQ6" target="_blank" id="discordBtn">
-<img src="https://cdn-icons-png.flaticon.com/512/2111/2111370.png">
-</a>
+<!-- ================= FIREBASE ================= -->
+<script type="module">
 
-<script>
-let users = JSON.parse(localStorage.getItem("users") || "{}");
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword }
+from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-// ADMIN FIXO
-if(!users["admin"]){
-users["admin"] = {pass:"lunarkanja",role:"adm"};
-localStorage.setItem("users", JSON.stringify(users));
-}
+import { getFirestore, collection, addDoc, getDocs }
+from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-let movs = JSON.parse(localStorage.getItem("movs") || "[]");
-let texs = JSON.parse(localStorage.getItem("texs") || "[]");
+import { getStorage, ref, uploadBytes, getDownloadURL }
+from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
-let isAdmin = false;
 
-function save(){
-localStorage.setItem("users",JSON.stringify(users));
-localStorage.setItem("movs",JSON.stringify(movs));
-localStorage.setItem("texs",JSON.stringify(texs));
-}
+// 🔥 COLE SUA CONFIG DO FIREBASE AQUI
+const firebaseConfig = {
+apiKey: "SUA_API_KEY",
+authDomain: "SEU_AUTH",
+projectId: "SEU_ID",
+storageBucket: "SEU_BUCKET",
+messagingSenderId: "SEU_ID",
+appId: "SEU_APP"
+};
 
-function toggleRegister(){
-document.getElementById("registerBox").classList.toggle("hidden");
-}
+const app = initializeApp(firebaseConfig);
 
-function register(){
-let u=document.getElementById("regUser").value;
-let p=document.getElementById("regPass").value;
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
 
-if(!u||!p){
-document.getElementById("info").innerText="Preencha tudo";
-return;
-}
+window.auth = auth;
+window.db = db;
+window.storage = storage;
 
-if(users[u]){
-document.getElementById("info").innerText="Usuário já existe";
-return;
-}
+window.firebase = {
+createUserWithEmailAndPassword,
+signInWithEmailAndPassword,
+collection,
+addDoc,
+getDocs,
+ref,
+uploadBytes,
+getDownloadURL
+};
 
-users[u]={pass:p,role:"membro"};
-save();
-document.getElementById("info").innerText="Conta criada!";
-}
+// ================= LOGIN =================
 
-function login(){
-let u=document.getElementById("loginUser").value;
-let p=document.getElementById("loginPass").value;
+window.login = async function(){
 
-if(users[u] && users[u].pass===p){
+let email = document.getElementById("loginUser").value;
+let pass = document.getElementById("loginPass").value;
+
+try{
+
+await firebase.signInWithEmailAndPassword(auth,email,pass);
 
 document.getElementById("loginArea").classList.add("hidden");
 document.getElementById("siteArea").classList.remove("hidden");
 
-isAdmin = users[u].role==="adm";
+loadMov();
+loadTex();
 
-if(isAdmin){
-document.getElementById("adminMov").classList.remove("hidden");
-document.getElementById("adminTex").classList.remove("hidden");
-}
-
-renderAll();
-openPage("movPage");
-
-}else{
+}catch{
 document.getElementById("info").innerText="Login inválido";
 }
+
 }
 
-function openPage(id){
-document.getElementById("movPage").style.display="none";
-document.getElementById("texPage").style.display="none";
-document.getElementById(id).style.display="block";
+// ================= REGISTER =================
+
+window.register = async function(){
+
+let email = document.getElementById("loginUser").value;
+let pass = document.getElementById("loginPass").value;
+
+try{
+await firebase.createUserWithEmailAndPassword(auth,email,pass);
+document.getElementById("info").innerText="Conta criada!";
+}catch{
+document.getElementById("info").innerText="Erro";
 }
 
-function addMov(){
+}
 
-if(!isAdmin)return;
+// ================= NAV =================
+
+window.show = function(p){
+
+document.getElementById("mov").classList.add("hidden");
+document.getElementById("tex").classList.add("hidden");
+
+document.getElementById(p).classList.remove("hidden");
+}
+
+// ================= MOV =================
+
+window.addMov = async function(){
 
 let file=document.getElementById("movFile").files[0];
-if(!file) return;
+if(!file)return;
 
-let reader=new FileReader();
+let r=firebase.ref(storage,"mov/"+file.name);
 
-reader.onload=e=>{
-movs.push({
-img:e.target.result,
+await firebase.uploadBytes(r,file);
+
+let url=await firebase.getDownloadURL(r);
+
+await firebase.addDoc(collection(db,"mov"),{
+img:url,
 text:document.getElementById("movText").value
 });
-save();
-renderAll();
+
+loadMov();
 }
 
-reader.readAsDataURL(file);
-}
+window.loadMov = async function(){
 
-function addTex(){
-
-if(!isAdmin)return;
-
-let file=document.getElementById("texFile").files[0];
-if(!file) return;
-
-let reader=new FileReader();
-
-reader.onload=e=>{
-texs.push({
-img:e.target.result,
-cabeca:document.getElementById("texCabeca").value,
-torso:document.getElementById("texTorso").value,
-maoE:document.getElementById("texMaoE").value,
-maoD:document.getElementById("texMaoD").value,
-peE:document.getElementById("texPeE").value,
-peD:document.getElementById("texPeD").value,
-completo:document.getElementById("texCompleto").value
-});
-save();
-renderAll();
-}
-
-reader.readAsDataURL(file);
-}
-
-function renderAll(){
+let snap=await firebase.getDocs(collection(db,"mov"));
 
 document.getElementById("movList").innerHTML="";
-document.getElementById("texList").innerHTML="";
 
-movs.forEach((m,i)=>{
+snap.forEach(d=>{
+let m=d.data();
+
 document.getElementById("movList").innerHTML+=`
 <div class="card">
 <img src="${m.img}">
-<div class="actions">
-<p>${m.text}</p>
-</div>
+<div class="actions">${m.text}</div>
 </div>`;
 });
+}
 
-texs.forEach((t,i)=>{
+// ================= TEX =================
+
+window.addTex = async function(){
+
+let file=document.getElementById("texFile").files[0];
+if(!file)return;
+
+let r=firebase.ref(storage,"tex/"+file.name);
+
+await firebase.uploadBytes(r,file);
+
+let url=await firebase.getDownloadURL(r);
+
+await firebase.addDoc(collection(db,"tex"),{
+img:url,
+cabeca:texCabeca.value,
+torso:texTorso.value,
+maoE:texMaoE.value,
+maoD:texMaoD.value,
+peE:texPeE.value,
+peD:texPeD.value,
+completo:texCompleto.value
+});
+
+loadTex();
+}
+
+window.loadTex = async function(){
+
+let snap=await firebase.getDocs(collection(db,"tex"));
+
+document.getElementById("texList").innerHTML="";
+
+snap.forEach(d=>{
+let t=d.data();
+
 document.getElementById("texList").innerHTML+=`
 <div class="card">
 <img src="${t.img}">
@@ -335,6 +305,7 @@ document.getElementById("texList").innerHTML+=`
 </div>`;
 });
 }
+
 </script>
 
 </body>
