@@ -18,7 +18,10 @@ padding:10px
 
 .container{max-width:900px;margin:auto}
 
-.header{text-align:center;margin:15px 0 25px 0;}
+.header{
+text-align:center;
+margin:15px 0 25px 0;
+}
 
 .header h1{
 font-size:42px;
@@ -45,7 +48,7 @@ cursor:pointer;
 
 .hidden{display:none}
 
-/* 🔥 BARRA DE PESQUISA VISÍVEL */
+/* 🔍 SEARCH */
 .search{
 width:100%;
 padding:12px;
@@ -54,9 +57,7 @@ border-radius:12px;
 border:2px solid #7c3aed;
 background:#111;
 color:#fff;
-font-size:14px;
 outline:none;
-box-shadow:0 0 10px rgba(124,58,237,0.5);
 }
 
 .nav{display:flex;gap:10px;margin:15px 0}
@@ -66,8 +67,8 @@ box-shadow:0 0 10px rgba(124,58,237,0.5);
 background:#1a1a1a;
 border-radius:18px;
 margin-bottom:10px;
-overflow:visible;
 padding-bottom:10px;
+overflow:visible;
 }
 
 .card img{
@@ -89,27 +90,6 @@ flex-wrap:wrap;
 }
 
 .actions button{flex:1}
-
-#discordBtn{
-position:fixed;
-bottom:15px;
-right:15px;
-width:60px;
-height:60px;
-z-index:999;
-}
-
-#discordBtn img{
-width:100%;
-height:100%;
-cursor:pointer;
-transition:0.2s;
-filter:drop-shadow(0 0 10px #7c3aed);
-}
-
-#discordBtn img:hover{
-transform:scale(1.15);
-}
 </style>
 
 </head>
@@ -123,8 +103,11 @@ transform:scale(1.15);
 <p>Movsets exclusivos Kanja</p>
 </div>
 
+<!-- LOGIN -->
+
 <div id="loginArea">
 <h2>Login</h2>
+
 <input id="loginUser" placeholder="Nome">
 <input id="loginPass" type="password" placeholder="Senha">
 <button onclick="login()">Entrar</button>
@@ -139,9 +122,9 @@ transform:scale(1.15);
 <p id="info"></p>
 </div>
 
-<div id="siteArea" class="hidden">
+<!-- SITE -->
 
-<!-- 🔍 PESQUISA -->
+<div id="siteArea" class="hidden">
 
 <input id="search" class="search" placeholder="🔍 Buscar pelo nome...">
 
@@ -198,10 +181,6 @@ transform:scale(1.15);
 </div>
 </div>
 
-<a href="https://discord.gg/CYztbg3mQ6" target="_blank" id="discordBtn">
-<img src="https://cdn-icons-png.flaticon.com/512/2111/2111370.png">
-</a>
-
 <script>
 let users = JSON.parse(localStorage.getItem("users") || "{}");
 
@@ -225,10 +204,11 @@ localStorage.setItem("maps",JSON.stringify(maps));
 
 function login(){
 if(users[loginUser.value] && users[loginUser.value].pass===loginPass.value){
+
 loginArea.classList.add("hidden");
 siteArea.classList.remove("hidden");
 
-isAdmin=users[loginUser.value].role==="adm";
+isAdmin = users[loginUser.value].role==="adm";
 
 if(isAdmin){
 adminMov.classList.remove("hidden");
@@ -261,9 +241,10 @@ document.getElementById(p).style.display="block";
 
 search.oninput=renderAll;
 
+/* 🔥 RENDER */
 function renderAll(){
 
-let s=search.value.toLowerCase();
+let s = search.value.toLowerCase();
 
 movList.innerHTML="";
 texList.innerHTML="";
@@ -303,41 +284,66 @@ ${isAdmin?`<div class="actions"><button onclick="deleteMap(${i})">Excluir</butto
 });
 }
 
+/* 🔥 COPY */
 function copyText(t,b){
 navigator.clipboard.writeText(t);
 b.innerText="Copiado!";
 setTimeout(()=>b.innerText="Copiar",1500);
 }
 
+/* 🔥 ADD MOV */
 function addMov(){
+let file=document.getElementById("movFile").files[0];
+if(!file) return;
+
 let r=new FileReader();
 r.onload=e=>{
-movs.push({name:movName.value,img:e.target.result,text:movText.value});
+movs.push({
+name:movName.value||"Sem nome",
+img:e.target.result,
+text:movText.value||""
+});
 save();renderAll();
 }
-r.readAsDataURL(movFile.files[0]);
+r.readAsDataURL(file);
 }
 
+/* 🔥 ADD TEX */
 function addTex(){
+let file=document.getElementById("texFile").files[0];
+if(!file) return;
+
 let r=new FileReader();
 r.onload=e=>{
-texs.push({name:texName.value,img:e.target.result,text:texText.value});
+texs.push({
+name:texName.value||"Sem nome",
+img:e.target.result,
+text:texText.value||""
+});
 save();renderAll();
 }
-r.readAsDataURL(texFile.files[0]);
+r.readAsDataURL(file);
 }
 
+/* 🔥 ADD MAP */
 function addMap(){
+let file=document.getElementById("mapFile").files[0];
+if(!file) return;
+
 let r=new FileReader();
 r.onload=e=>{
-maps.push({name:mapName.value,img:e.target.result});
+maps.push({
+name:mapName.value||"Sem nome",
+img:e.target.result
+});
 save();renderAll();
 }
-r.readAsDataURL(mapFile.files[0]);
+r.readAsDataURL(file);
 }
 </script>
 
 </body>
 </html>
+
 
 
