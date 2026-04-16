@@ -48,7 +48,6 @@ cursor:pointer;
 
 .hidden{display:none}
 
-/* 🔍 SEARCH */
 .search{
 width:100%;
 padding:12px;
@@ -68,7 +67,6 @@ background:#1a1a1a;
 border-radius:18px;
 margin-bottom:10px;
 padding-bottom:10px;
-overflow:visible;
 }
 
 .card img{
@@ -79,7 +77,6 @@ display:block;
 
 .card h3{
 padding:8px;
-font-size:16px;
 }
 
 .actions{
@@ -107,7 +104,6 @@ flex-wrap:wrap;
 
 <div id="loginArea">
 <h2>Login</h2>
-
 <input id="loginUser" placeholder="Nome">
 <input id="loginPass" type="password" placeholder="Senha">
 <button onclick="login()">Entrar</button>
@@ -126,7 +122,7 @@ flex-wrap:wrap;
 
 <div id="siteArea" class="hidden">
 
-<input id="search" class="search" placeholder="🔍 Buscar pelo nome...">
+<input id="search" class="search" placeholder="🔍 Buscar por nome">
 
 <div class="nav">
 <button onclick="openPage('movPage')">Movsets</button>
@@ -140,7 +136,7 @@ flex-wrap:wrap;
 <h2>Movsets</h2>
 
 <div id="adminMov" class="hidden">
-<input id="movName" placeholder="Nome do movset">
+<input id="movName" placeholder="Nome">
 <input id="movFile" type="file">
 <input id="movText" placeholder="Texto">
 <button onclick="addMov()">Adicionar</button>
@@ -155,7 +151,7 @@ flex-wrap:wrap;
 <h2>Texturas</h2>
 
 <div id="adminTex" class="hidden">
-<input id="texName" placeholder="Nome da textura">
+<input id="texName" placeholder="Nome">
 <input id="texFile" type="file">
 <input id="texText" placeholder="Texto">
 <button onclick="addTex()">Adicionar</button>
@@ -170,7 +166,7 @@ flex-wrap:wrap;
 <h2>Mapas</h2>
 
 <div id="adminMap" class="hidden">
-<input id="mapName" placeholder="Nome do mapa">
+<input id="mapName" placeholder="Nome">
 <input id="mapFile" type="file">
 <button onclick="addMap()">Adicionar</button>
 </div>
@@ -257,7 +253,6 @@ movList.innerHTML+=`
 <img src="${m.img}">
 <div class="actions">
 <button onclick="copyText('${m.text}',this)">Copiar</button>
-${isAdmin?`<button onclick="deleteMov(${i})">Excluir</button>`:""}
 </div>
 </div>`;
 });
@@ -269,7 +264,6 @@ texList.innerHTML+=`
 <img src="${t.img}">
 <div class="actions">
 <button onclick="copyText('${t.text}',this)">Copiar</button>
-${isAdmin?`<button onclick="deleteTex(${i})">Excluir</button>`:""}
 </div>
 </div>`;
 });
@@ -279,7 +273,6 @@ mapList.innerHTML+=`
 <div class="card">
 <h3>${m.name}</h3>
 <img src="${m.img}">
-${isAdmin?`<div class="actions"><button onclick="deleteMap(${i})">Excluir</button></div>`:""}
 </div>`;
 });
 }
@@ -344,6 +337,7 @@ r.readAsDataURL(file);
 
 </body>
 </html>
+
 
 
 
