@@ -62,13 +62,27 @@ margin:15px 0
 background:#1a1a1a;
 border-radius:18px;
 overflow:hidden;
-margin-bottom:10px;
+margin-bottom:12px;
+border:1px solid #333;
 }
 
 .card img{
 width:100%;
 height:220px;
 object-fit:cover;
+}
+
+.title{
+padding:10px;
+font-size:18px;
+font-weight:bold;
+color:#7c3aed;
+}
+
+.sub{
+padding:0 10px 10px;
+font-size:13px;
+color:#aaa;
 }
 
 .actions{
@@ -79,6 +93,10 @@ flex-wrap:wrap;
 }
 
 .actions button{flex:1}
+
+.search{
+margin:10px 0 15px 0;
+}
 
 #discordBtn{
 position:fixed;
@@ -134,14 +152,19 @@ transform:scale(1.15);
 
 <div class="nav">
 <button onclick="openPage('movPage')">Movsets</button>
-<button onclick="openPage('texPage')">Malha e Textura</button>
+<button onclick="openPage('mapPage')">Mapas</button>
+<button onclick="openPage('texPage')">Textura / Malha</button>
 </div>
 
+<!-- MOVSETS -->
 <div id="movPage">
 
 <h1>Movsets</h1>
 
+<input class="search" id="searchMov" placeholder="Pesquisar movset..." onkeyup="renderAll()">
+
 <div id="adminMov" class="hidden">
+<input id="movName" placeholder="Nome do movset">
 <input id="movFile" type="file">
 <input id="movText" placeholder="Texto">
 <button onclick="addMov()">Adicionar</button>
@@ -150,13 +173,32 @@ transform:scale(1.15);
 <div id="movList"></div>
 </div>
 
-<div id="texPage">
+<!-- MAPAS -->
+<div id="mapPage" style="display:none">
 
-<h1>Malha e Textura</h1>
+<h1>Mapas</h1>
+
+<input class="search" id="searchMap" placeholder="Pesquisar mapa..." onkeyup="renderAll()">
+
+<div id="adminMap" class="hidden">
+<input id="mapName" placeholder="Nome do mapa">
+<input id="mapFile" type="file">
+<button onclick="addMap()">Adicionar</button>
+</div>
+
+<div id="mapList"></div>
+</div>
+
+<!-- TEXTURA -->
+<div id="texPage" style="display:none">
+
+<h1>Textura / Malha</h1>
+
+<input class="search" id="searchTex" placeholder="Pesquisar textura ou malha..." onkeyup="renderAll()">
 
 <div id="adminTex" class="hidden">
+<input id="texName" placeholder="Nome da textura/malha">
 <input id="texFile" type="file">
-<input id="texText" placeholder="Texto">
 <button onclick="addTex()">Adicionar</button>
 </div>
 
@@ -173,13 +215,13 @@ transform:scale(1.15);
 <script>
 let users = JSON.parse(localStorage.getItem("users") || "{}");
 
-// CORREÇÃO DO ADMIN
 if(!users["admin"]){
-  users["admin"] = {pass:"lunarkanja",role:"adm"};
-  localStorage.setItem("users", JSON.stringify(users));
+users["admin"]={pass:"lunarkanja",role:"adm"};
+localStorage.setItem("users",JSON.stringify(users));
 }
 
 let movs = JSON.parse(localStorage.getItem("movs") || "[]");
+let maps = JSON.parse(localStorage.getItem("maps") || "[]");
 let texs = JSON.parse(localStorage.getItem("texs") || "[]");
 
 let isAdmin = false;
@@ -187,16 +229,17 @@ let isAdmin = false;
 function save(){
 localStorage.setItem("users",JSON.stringify(users));
 localStorage.setItem("movs",JSON.stringify(movs));
+localStorage.setItem("maps",JSON.stringify(maps));
 localStorage.setItem("texs",JSON.stringify(texs));
 }
 
 function toggleRegister(){
-document.getElementById("registerBox").classList.toggle("hidden");
+registerBox.classList.toggle("hidden");
 }
 
 function register(){
-let u = regUser.value;
-let p = regPass.value;
+let u=regUser.value.trim();
+let p=regPass.value.trim();
 
 if(!u || !p){
 info.innerText="Preencha tudo";
@@ -210,23 +253,23 @@ return;
 
 users[u]={pass:p,role:"membro"};
 save();
-
 info.innerText="Conta criada!";
 }
 
 function login(){
-let u=loginUser.value;
-let p=loginPass.value;
+let u=loginUser.value.trim();
+let p=loginPass.value.trim();
 
-if(users[u] && users[u].pass === p){
+if(users[u] && users[u].pass===p){
 
 loginArea.classList.add("hidden");
 siteArea.classList.remove("hidden");
 
-isAdmin = users[u].role === "adm";
+isAdmin = users[u].role==="adm";
 
 if(isAdmin){
 adminMov.classList.remove("hidden");
+adminMap.classList.remove("hidden");
 adminTex.classList.remove("hidden");
 }
 
@@ -240,6 +283,7 @@ info.innerText="Login inválido";
 
 function openPage(id){
 movPage.style.display="none";
+mapPage.style.display="none";
 texPage.style.display="none";
 document.getElementById(id).style.display="block";
 }
@@ -247,12 +291,21 @@ document.getElementById(id).style.display="block";
 function renderAll(){
 
 movList.innerHTML="";
+mapList.innerHTML="";
 texList.innerHTML="";
 
+let sm = searchMov.value.toLowerCase();
+let sma = searchMap.value.toLowerCase();
+let st = searchTex.value.toLowerCase();
+
 movs.forEach((m,i)=>{
-movList.innerHTML+=`
+if(!m.name.toLowerCase().includes(sm)) return;
+
+movList.innerHTML += `
 <div class="card">
+<div class="title">${m.name}</div>
 <img src="${m.img}">
+<div class="sub">${m.text}</div>
 <div class="actions">
 <button onclick="copyText('${m.text}',this)">Copiar</button>
 ${isAdmin?`<button onclick="deleteMov(${i})">Excluir</button>`:""}
@@ -260,11 +313,29 @@ ${isAdmin?`<button onclick="deleteMov(${i})">Excluir</button>`:""}
 </div>`;
 });
 
-texs.forEach((t,i)=>{
-texList.innerHTML+=`
+maps.forEach((m,i)=>{
+if(!m.name.toLowerCase().includes(sma)) return;
+
+mapList.innerHTML += `
 <div class="card">
+<div class="title">${m.name}</div>
+<img src="${m.img}">
+<div class="actions">
+${isAdmin?`<button onclick="deleteMap(${i})">Excluir</button>`:""}
+</div>
+</div>`;
+});
+
+texs.forEach((t,i)=>{
+if(!t.name.toLowerCase().includes(st)) return;
+
+texList.innerHTML += `
+<div class="card">
+<div class="title">${t.name}</div>
 <img src="${t.img}">
-${isAdmin?`<div class="actions"><button onclick="deleteTex(${i})">Excluir</button></div>`:""}
+<div class="actions">
+${isAdmin?`<button onclick="deleteTex(${i})">Excluir</button>`:""}
+</div>
 </div>`;
 });
 }
@@ -276,28 +347,50 @@ setTimeout(()=>btn.innerText="Copiar",1500);
 }
 
 function deleteMov(i){
-if(!isAdmin)return;
 movs.splice(i,1);
 save();
 renderAll();
 }
 
+function deleteMap(i){
+maps.splice(i,1);
+save();
+renderAll();
+}
+
 function deleteTex(i){
-if(!isAdmin)return;
 texs.splice(i,1);
 save();
 renderAll();
 }
 
 function addMov(){
-if(!isAdmin)return;
-
 let file=movFile.files[0];
 if(!file) return;
 
 let reader=new FileReader();
 reader.onload=e=>{
-movs.push({img:e.target.result,text:movText.value});
+movs.push({
+name:movName.value || "Sem nome",
+img:e.target.result,
+text:movText.value || ""
+});
+save();
+renderAll();
+}
+reader.readAsDataURL(file);
+}
+
+function addMap(){
+let file=mapFile.files[0];
+if(!file) return;
+
+let reader=new FileReader();
+reader.onload=e=>{
+maps.push({
+name:mapName.value || "Sem nome",
+img:e.target.result
+});
 save();
 renderAll();
 }
@@ -305,14 +398,15 @@ reader.readAsDataURL(file);
 }
 
 function addTex(){
-if(!isAdmin)return;
-
 let file=texFile.files[0];
 if(!file) return;
 
 let reader=new FileReader();
 reader.onload=e=>{
-texs.push({img:e.target.result});
+texs.push({
+name:texName.value || "Sem nome",
+img:e.target.result
+});
 save();
 renderAll();
 }
