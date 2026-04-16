@@ -3,39 +3,68 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lunar Online</title>
+<title>Lunar</title>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 
 body{
-font-family:Arial;
+font-family:Arial,sans-serif;
 background:#000;
 color:#fff;
-padding:10px;
+padding:10px
 }
 
 .container{max-width:900px;margin:auto}
 
-.header{text-align:center;margin:20px 0}
-.header h1{color:#7c3aed;font-size:40px;text-shadow:0 0 10px #7c3aed}
+.header{
+text-align:center;
+margin:15px 0 25px 0;
+}
+
+.header h1{
+font-size:42px;
+color:#7c3aed;
+letter-spacing:6px;
+text-shadow:0 0 15px rgba(124,58,237,0.7);
+}
+
+.header p{
+font-size:13px;
+color:#aaa;
+}
 
 input,button{
 width:100%;
-padding:10px;
-margin:5px 0;
-border-radius:10px;
+padding:12px;
+margin:6px 0;
 border:none;
+border-radius:10px
 }
 
-button{background:#7c3aed;color:#fff;cursor:pointer}
+button{
+background:#7c3aed;
+color:#fff;
+cursor:pointer;
+}
 
+.hidden{display:none}
+
+.nav{
+display:flex;
+gap:10px;
+margin:15px 0
+}
+
+.nav button{flex:1}
+
+/* CARD */
 .card{
 background:#1a1a1a;
+border-radius:18px;
+margin-bottom:12px;
 border:1px solid #333;
-border-radius:15px;
-margin:10px 0;
-overflow:hidden;
+overflow:visible;
 }
 
 .card img{
@@ -43,20 +72,34 @@ width:100%;
 height:auto;
 display:block;
 background:#000;
+object-fit:contain;
 }
 
 .title{
 padding:10px;
-color:#7c3aed;
+font-size:18px;
 font-weight:bold;
+color:#7c3aed;
 }
 
-.actions{padding:10px}
+.sub{
+padding:0 10px 10px;
+font-size:13px;
+color:#aaa;
+}
 
-.hidden{display:none}
+.actions{
+padding:10px;
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+}
 
-.nav{display:flex;gap:10px;margin:10px 0}
-.nav button{flex:1}
+.actions button{flex:1}
+
+.search{
+margin:10px 0 15px 0;
+}
 
 #discordBtn{
 position:fixed;
@@ -64,8 +107,20 @@ bottom:15px;
 right:15px;
 width:60px;
 height:60px;
+z-index:999;
 }
-#discordBtn img{width:100%}
+
+#discordBtn img{
+width:100%;
+height:100%;
+cursor:pointer;
+transition:0.2s;
+filter:drop-shadow(0 0 10px #7c3aed);
+}
+
+#discordBtn img:hover{
+transform:scale(1.15);
+}
 </style>
 </head>
 
@@ -74,34 +129,43 @@ height:60px;
 <div class="container">
 
 <div class="header">
-<h1>LUNAR ONLINE</h1>
-<p>Todos veem os mesmos dados</p>
+<h1>LUNAR</h1>
+<p>Movsets exclusivos Kanja</p>
 </div>
 
 <!-- MOVSETS -->
-<h2>Movsets</h2>
+<div id="movPage">
+<h1>Movsets</h1>
+
 <input id="movName" placeholder="Nome">
 <input id="movText" placeholder="Texto">
 <input id="movFile" type="file">
 <button onclick="addMov()">Adicionar Movset</button>
 
 <div id="movList"></div>
+</div>
 
 <!-- MAPAS -->
-<h2>Mapas</h2>
+<div id="mapPage">
+<h1>Mapas</h1>
+
 <input id="mapName" placeholder="Nome">
 <input id="mapFile" type="file">
 <button onclick="addMap()">Adicionar Mapa</button>
 
 <div id="mapList"></div>
+</div>
 
 <!-- TEXTURA -->
-<h2>Textura / Malha</h2>
+<div id="texPage">
+<h1>Textura / Malha</h1>
+
 <input id="texName" placeholder="Nome">
 <input id="texFile" type="file">
 <button onclick="addTex()">Adicionar Textura</button>
 
 <div id="texList"></div>
+</div>
 
 </div>
 
@@ -109,7 +173,7 @@ height:60px;
 <img src="https://cdn-icons-png.flaticon.com/512/2111/2111370.png">
 </a>
 
-<!-- 🔥 FIREBASE (ONLINE) -->
+<!-- 🔥 FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
@@ -126,6 +190,9 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+/* =======================
+   ADD MOVSET
+======================= */
 function addMov(){
 let file = movFile.files[0];
 if(!file) return;
@@ -133,14 +200,17 @@ if(!file) return;
 let r = new FileReader();
 r.onload = e=>{
 db.collection("movs").add({
-name:movName.value,
-text:movText.value,
-img:e.target.result
+name: movName.value || "Sem nome",
+text: movText.value || "",
+img: e.target.result
 });
 }
 r.readAsDataURL(file);
 }
 
+/* =======================
+   ADD MAPA
+======================= */
 function addMap(){
 let file = mapFile.files[0];
 if(!file) return;
@@ -148,13 +218,16 @@ if(!file) return;
 let r = new FileReader();
 r.onload = e=>{
 db.collection("maps").add({
-name:mapName.value,
-img:e.target.result
+name: mapName.value || "Sem nome",
+img: e.target.result
 });
 }
 r.readAsDataURL(file);
 }
 
+/* =======================
+   ADD TEXTURA
+======================= */
 function addTex(){
 let file = texFile.files[0];
 if(!file) return;
@@ -162,23 +235,26 @@ if(!file) return;
 let r = new FileReader();
 r.onload = e=>{
 db.collection("texs").add({
-name:texName.value,
-img:e.target.result
+name: texName.value || "Sem nome",
+img: e.target.result
 });
 }
 r.readAsDataURL(file);
 }
 
-/* 🔥 CARREGAR EM TEMPO REAL */
+/* =======================
+   CARREGAR EM TEMPO REAL
+======================= */
 db.collection("movs").onSnapshot(s=>{
 movList.innerHTML="";
 s.forEach(d=>{
 let m=d.data();
-movList.innerHTML+=`
+
+movList.innerHTML += `
 <div class="card">
 <div class="title">${m.name}</div>
 <img src="${m.img}">
-<div>${m.text||""}</div>
+<div class="sub">${m.text}</div>
 </div>`;
 });
 });
@@ -187,7 +263,8 @@ db.collection("maps").onSnapshot(s=>{
 mapList.innerHTML="";
 s.forEach(d=>{
 let m=d.data();
-mapList.innerHTML+=`
+
+mapList.innerHTML += `
 <div class="card">
 <div class="title">${m.name}</div>
 <img src="${m.img}">
@@ -199,7 +276,8 @@ db.collection("texs").onSnapshot(s=>{
 texList.innerHTML="";
 s.forEach(d=>{
 let m=d.data();
-texList.innerHTML+=`
+
+texList.innerHTML += `
 <div class="card">
 <div class="title">${m.name}</div>
 <img src="${m.img}">
