@@ -17,6 +17,7 @@ padding:10px
 
 .container{max-width:900px;margin:auto}
 
+/* HEADER */
 .header{
 text-align:center;
 margin:15px 0 25px 0;
@@ -34,6 +35,7 @@ font-size:13px;
 color:#aaa;
 }
 
+/* INPUTS */
 input,button{
 width:100%;
 padding:12px;
@@ -50,6 +52,7 @@ cursor:pointer;
 
 .hidden{display:none}
 
+/* NAV */
 .nav{
 display:flex;
 gap:10px;
@@ -58,11 +61,13 @@ margin:15px 0
 
 .nav button{flex:1}
 
+/* CARD */
 .card{
 background:#1a1a1a;
 border-radius:18px;
 overflow:hidden;
 margin-bottom:10px;
+position:relative;
 }
 
 .card img{
@@ -71,29 +76,63 @@ height:220px;
 object-fit:cover;
 }
 
+/* ACTIONS */
 .actions{
 padding:10px;
 display:flex;
 gap:10px;
+flex-wrap:wrap;
 }
 
 .actions button{flex:1}
 
+/* TEXT */
+.text{
+background:#111;
+padding:12px;
+margin:8px 0;
+border-radius:12px;
+display:flex;
+justify-content:space-between;
+}
+
+/* LOGIN */
+#loginArea{margin-top:10px}
+
+/* REGISTRAR PEQUENO 🔥 */
+#registerBox button{
+width:auto;
+padding:6px 10px;
+font-size:11px;
+border-radius:8px;
+background:#5b21b6;
+}
+
+/* PÁGINAS */
 #movPage,#texPage{
 display:none;
 }
 
+/* DISCORD */
 #discordBtn{
 position:fixed;
 bottom:15px;
 right:15px;
 width:60px;
 height:60px;
+z-index:999;
 }
 
 #discordBtn img{
 width:100%;
+height:100%;
 cursor:pointer;
+transition:0.2s;
+filter:drop-shadow(0 0 10px #7c3aed);
+}
+
+#discordBtn img:hover{
+transform:scale(1.15);
 }
 </style>
 </head>
@@ -102,11 +141,13 @@ cursor:pointer;
 
 <div class="container">
 
+<!-- HEADER -->
 <div class="header">
 <h1>LUNAR</h1>
-<p>Movsets exclusivos</p>
+<p>Movsets exclusivos Kanja</p>
 </div>
 
+<!-- LOGIN -->
 <div id="loginArea">
 <h2>Login</h2>
 
@@ -125,17 +166,21 @@ cursor:pointer;
 <p id="info"></p>
 </div>
 
+<!-- SITE -->
 <div id="siteArea" class="hidden">
 
 <div class="nav">
 <button onclick="openPage('movPage')">Movsets</button>
-<button onclick="openPage('texPage')">Texturas</button>
+<button onclick="openPage('texPage')">Malha e Textura</button>
 </div>
 
+<!-- MOVSETS -->
 <div id="movPage">
-<h2>Movsets</h2>
+
+<h1>Movsets</h1>
 
 <div id="adminMov" class="hidden">
+<input id="movLink" placeholder="Link da imagem">
 <input id="movFile" type="file">
 <input id="movText" placeholder="Texto">
 <button onclick="addMov()">Adicionar</button>
@@ -144,11 +189,14 @@ cursor:pointer;
 <div id="movList"></div>
 </div>
 
+<!-- TEXTURA -->
 <div id="texPage">
-<h2>Texturas</h2>
+
+<h1>Malha e Textura</h1>
 
 <div id="adminTex" class="hidden">
 <input id="texFile" type="file">
+<input id="texText" placeholder="Texto">
 <button onclick="addTex()">Adicionar</button>
 </div>
 
@@ -158,13 +206,14 @@ cursor:pointer;
 </div>
 </div>
 
+<!-- DISCORD -->
 <a href="https://discord.gg/CYztbg3mQ6" target="_blank" id="discordBtn">
 <img src="https://cdn-icons-png.flaticon.com/512/2111/2111370.png">
 </a>
 
 <script>
 let users = JSON.parse(localStorage.getItem("users") || "{}");
-users["admin"] = {pass:"1234",role:"adm"};
+users["admin"] = {pass:"lunarkanja",role:"adm"};
 
 let movs = JSON.parse(localStorage.getItem("movs") || "[]");
 let texs = JSON.parse(localStorage.getItem("texs") || "[]");
@@ -217,12 +266,15 @@ info.innerText="Login inválido";
 }
 
 function openPage(id){
+
 movPage.style.display="none";
 texPage.style.display="none";
+
 document.getElementById(id).style.display="block";
 }
 
 function renderAll(){
+
 movList.innerHTML="";
 texList.innerHTML="";
 
@@ -241,7 +293,7 @@ texs.forEach((t,i)=>{
 texList.innerHTML+=`
 <div class="card">
 <img src="${t.img}">
-${isAdmin?`<button onclick="deleteTex(${i})">Excluir</button>`:""}
+${isAdmin?`<div class="actions"><button onclick="deleteTex(${i})">Excluir</button></div>`:""}
 </div>`;
 });
 }
@@ -268,7 +320,9 @@ renderAll();
 
 function addMov(){
 if(!isAdmin)return;
+
 let file=movFile.files[0];
+
 let reader=new FileReader();
 reader.onload=e=>{
 movs.push({img:e.target.result,text:movText.value});
@@ -279,7 +333,9 @@ reader.readAsDataURL(file);
 
 function addTex(){
 if(!isAdmin)return;
+
 let file=texFile.files[0];
+
 let reader=new FileReader();
 reader.onload=e=>{
 texs.push({img:e.target.result});
