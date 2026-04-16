@@ -74,11 +74,9 @@ object-fit:cover;
 .actions{
 padding:10px;
 display:flex;
-gap:10px;
-flex-wrap:wrap;
+flex-direction:column;
+gap:5px;
 }
-
-.actions button{flex:1}
 
 #discordBtn{
 position:fixed;
@@ -93,13 +91,10 @@ z-index:999;
 width:100%;
 height:100%;
 cursor:pointer;
-transition:0.2s;
 filter:drop-shadow(0 0 10px #7c3aed);
 }
 
-#discordBtn img:hover{
-transform:scale(1.15);
-}
+#discordBtn img:hover{transform:scale(1.15)}
 </style>
 </head>
 
@@ -112,13 +107,15 @@ transform:scale(1.15);
 <p>Movsets exclusivos Kanja</p>
 </div>
 
+<!-- LOGIN -->
 <div id="loginArea">
+
 <h2>Login</h2>
 
 <input id="loginUser" placeholder="Nome">
 <input id="loginPass" type="password" placeholder="Senha">
-<button onclick="login()">Entrar</button>
 
+<button onclick="login()">Entrar</button>
 <button onclick="toggleRegister()">Registrar</button>
 
 <div id="registerBox" class="hidden">
@@ -130,6 +127,7 @@ transform:scale(1.15);
 <p id="info"></p>
 </div>
 
+<!-- SITE -->
 <div id="siteArea" class="hidden">
 
 <div class="nav">
@@ -137,35 +135,50 @@ transform:scale(1.15);
 <button onclick="openPage('texPage')">Malha e Textura</button>
 </div>
 
+<!-- MOVSETS -->
 <div id="movPage">
 
-<h1>Movsets</h1>
+<h2>Movsets</h2>
 
 <div id="adminMov" class="hidden">
 <input id="movFile" type="file">
-<input id="movText" placeholder="Texto">
+<input id="movText" placeholder="Texto do movset">
 <button onclick="addMov()">Adicionar</button>
 </div>
 
 <div id="movList"></div>
+
 </div>
 
+<!-- TEXTURA -->
 <div id="texPage">
 
-<h1>Malha e Textura</h1>
+<h2>Malha e Textura</h2>
 
 <div id="adminTex" class="hidden">
+
 <input id="texFile" type="file">
-<input id="texText" placeholder="Texto">
+
+<input id="texCabeca" placeholder="Cabeça">
+<input id="texTorso" placeholder="Torso">
+<input id="texMaoE" placeholder="Mão esquerda">
+<input id="texMaoD" placeholder="Mão direita">
+<input id="texPeE" placeholder="Pé esquerdo">
+<input id="texPeD" placeholder="Pé direito">
+<input id="texCompleto" placeholder="Completo">
+
 <button onclick="addTex()">Adicionar</button>
+
 </div>
 
 <div id="texList"></div>
+
 </div>
 
 </div>
 </div>
 
+<!-- DISCORD -->
 <a href="https://discord.gg/CYztbg3mQ6" target="_blank" id="discordBtn">
 <img src="https://cdn-icons-png.flaticon.com/512/2111/2111370.png">
 </a>
@@ -173,10 +186,10 @@ transform:scale(1.15);
 <script>
 let users = JSON.parse(localStorage.getItem("users") || "{}");
 
-// CORREÇÃO DO ADMIN
+// ADMIN FIXO
 if(!users["admin"]){
-  users["admin"] = {pass:"lunarkanja",role:"adm"};
-  localStorage.setItem("users", JSON.stringify(users));
+users["admin"] = {pass:"lunarkanja",role:"adm"};
+localStorage.setItem("users", JSON.stringify(users));
 }
 
 let movs = JSON.parse(localStorage.getItem("movs") || "[]");
@@ -195,128 +208,132 @@ document.getElementById("registerBox").classList.toggle("hidden");
 }
 
 function register(){
-let u = regUser.value;
-let p = regPass.value;
+let u=document.getElementById("regUser").value;
+let p=document.getElementById("regPass").value;
 
-if(!u || !p){
-info.innerText="Preencha tudo";
+if(!u||!p){
+document.getElementById("info").innerText="Preencha tudo";
 return;
 }
 
 if(users[u]){
-info.innerText="Usuário já existe";
+document.getElementById("info").innerText="Usuário já existe";
 return;
 }
 
 users[u]={pass:p,role:"membro"};
 save();
-
-info.innerText="Conta criada!";
+document.getElementById("info").innerText="Conta criada!";
 }
 
 function login(){
-let u=loginUser.value;
-let p=loginPass.value;
+let u=document.getElementById("loginUser").value;
+let p=document.getElementById("loginPass").value;
 
-if(users[u] && users[u].pass === p){
+if(users[u] && users[u].pass===p){
 
-loginArea.classList.add("hidden");
-siteArea.classList.remove("hidden");
+document.getElementById("loginArea").classList.add("hidden");
+document.getElementById("siteArea").classList.remove("hidden");
 
-isAdmin = users[u].role === "adm";
+isAdmin = users[u].role==="adm";
 
 if(isAdmin){
-adminMov.classList.remove("hidden");
-adminTex.classList.remove("hidden");
+document.getElementById("adminMov").classList.remove("hidden");
+document.getElementById("adminTex").classList.remove("hidden");
 }
 
-openPage("movPage");
 renderAll();
+openPage("movPage");
 
 }else{
-info.innerText="Login inválido";
+document.getElementById("info").innerText="Login inválido";
 }
 }
 
 function openPage(id){
-movPage.style.display="none";
-texPage.style.display="none";
+document.getElementById("movPage").style.display="none";
+document.getElementById("texPage").style.display="none";
 document.getElementById(id).style.display="block";
+}
+
+function addMov(){
+
+if(!isAdmin)return;
+
+let file=document.getElementById("movFile").files[0];
+if(!file) return;
+
+let reader=new FileReader();
+
+reader.onload=e=>{
+movs.push({
+img:e.target.result,
+text:document.getElementById("movText").value
+});
+save();
+renderAll();
+}
+
+reader.readAsDataURL(file);
+}
+
+function addTex(){
+
+if(!isAdmin)return;
+
+let file=document.getElementById("texFile").files[0];
+if(!file) return;
+
+let reader=new FileReader();
+
+reader.onload=e=>{
+texs.push({
+img:e.target.result,
+cabeca:document.getElementById("texCabeca").value,
+torso:document.getElementById("texTorso").value,
+maoE:document.getElementById("texMaoE").value,
+maoD:document.getElementById("texMaoD").value,
+peE:document.getElementById("texPeE").value,
+peD:document.getElementById("texPeD").value,
+completo:document.getElementById("texCompleto").value
+});
+save();
+renderAll();
+}
+
+reader.readAsDataURL(file);
 }
 
 function renderAll(){
 
-movList.innerHTML="";
-texList.innerHTML="";
+document.getElementById("movList").innerHTML="";
+document.getElementById("texList").innerHTML="";
 
 movs.forEach((m,i)=>{
-movList.innerHTML+=`
+document.getElementById("movList").innerHTML+=`
 <div class="card">
 <img src="${m.img}">
 <div class="actions">
-<button onclick="copyText('${m.text}',this)">Copiar</button>
-${isAdmin?`<button onclick="deleteMov(${i})">Excluir</button>`:""}
+<p>${m.text}</p>
 </div>
 </div>`;
 });
 
 texs.forEach((t,i)=>{
-texList.innerHTML+=`
+document.getElementById("texList").innerHTML+=`
 <div class="card">
 <img src="${t.img}">
-${isAdmin?`<div class="actions"><button onclick="deleteTex(${i})">Excluir</button></div>`:""}
+<div class="actions">
+<p>Cabeça: ${t.cabeca||"-"}</p>
+<p>Torso: ${t.torso||"-"}</p>
+<p>Mão E: ${t.maoE||"-"}</p>
+<p>Mão D: ${t.maoD||"-"}</p>
+<p>Pé E: ${t.peE||"-"}</p>
+<p>Pé D: ${t.peD||"-"}</p>
+<p>Completo: ${t.completo||"-"}</p>
+</div>
 </div>`;
 });
-}
-
-function copyText(text,btn){
-navigator.clipboard.writeText(text);
-btn.innerText="Copiado!";
-setTimeout(()=>btn.innerText="Copiar",1500);
-}
-
-function deleteMov(i){
-if(!isAdmin)return;
-movs.splice(i,1);
-save();
-renderAll();
-}
-
-function deleteTex(i){
-if(!isAdmin)return;
-texs.splice(i,1);
-save();
-renderAll();
-}
-
-function addMov(){
-if(!isAdmin)return;
-
-let file=movFile.files[0];
-if(!file) return;
-
-let reader=new FileReader();
-reader.onload=e=>{
-movs.push({img:e.target.result,text:movText.value});
-save();
-renderAll();
-}
-reader.readAsDataURL(file);
-}
-
-function addTex(){
-if(!isAdmin)return;
-
-let file=texFile.files[0];
-if(!file) return;
-
-let reader=new FileReader();
-reader.onload=e=>{
-texs.push({img:e.target.result});
-save();
-renderAll();
-}
-reader.readAsDataURL(file);
 }
 </script>
 
