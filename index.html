@@ -66,13 +66,14 @@ margin-bottom:12px;
 border:1px solid #333;
 }
 
-/* ✅ CORREÇÃO DA IMAGEM */
+/* ✅ IMAGEM AJUSTADA (NÃO CORTA E NÃO OCUPA ESPAÇO EXCESSIVO) */
 .card img{
 width:100%;
-aspect-ratio:16/9;
-object-fit:cover;
+max-height:220px;
+object-fit:contain;
 display:block;
 background:#000;
+padding:10px;
 }
 
 .title{
@@ -205,7 +206,6 @@ transform:scale(1.15);
 <div id="texList"></div>
 </div>
 
-</div>
 </div>
 
 <a href="https://discord.gg/CYztbg3mQ6" target="_blank" id="discordBtn">
