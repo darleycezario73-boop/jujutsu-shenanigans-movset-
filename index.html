@@ -34,8 +34,8 @@ text-shadow:0 0 15px rgba(124,58,237,0.7);
 
 input,button{
 width:100%;
-padding:10px;
-margin:5px 0;
+padding:12px;
+margin:6px 0;
 border:none;
 border-radius:10px
 }
@@ -48,35 +48,35 @@ cursor:pointer;
 
 .hidden{display:none}
 
+.nav{
+display:flex;
+gap:10px;
+margin:15px 0
+}
+
+.nav button{flex:1}
+
 .search{
 width:100%;
-padding:12px;
+padding:10px;
 margin:10px 0;
-border-radius:12px;
+border-radius:10px;
 border:2px solid #7c3aed;
 background:#111;
 color:#fff;
-outline:none;
 }
-
-.nav{display:flex;gap:10px;margin:15px 0}
-.nav button{flex:1}
 
 .card{
 background:#1a1a1a;
 border-radius:18px;
 margin-bottom:10px;
-padding-bottom:10px;
+overflow:hidden;
 }
 
 .card img{
 width:100%;
 height:auto;
 display:block;
-}
-
-.card h3{
-padding:8px;
 }
 
 .actions{
@@ -107,6 +107,7 @@ flex-wrap:wrap;
 <input id="loginUser" placeholder="Nome">
 <input id="loginPass" type="password" placeholder="Senha">
 <button onclick="login()">Entrar</button>
+
 <button onclick="toggleRegister()">Registrar</button>
 
 <div id="registerBox" class="hidden">
@@ -122,7 +123,9 @@ flex-wrap:wrap;
 
 <div id="siteArea" class="hidden">
 
-<input id="search" class="search" placeholder="🔍 Buscar por nome">
+<!-- 🔍 SEARCH SEPARADA -->
+
+<input id="search" class="search" placeholder="🔍 Buscar pelo nome..." oninput="renderAll()">
 
 <div class="nav">
 <button onclick="openPage('movPage')">Movsets</button>
@@ -133,10 +136,9 @@ flex-wrap:wrap;
 <!-- MOVSETS -->
 
 <div id="movPage">
-<h2>Movsets</h2>
+<h1>Movsets</h1>
 
 <div id="adminMov" class="hidden">
-<input id="movName" placeholder="Nome">
 <input id="movFile" type="file">
 <input id="movText" placeholder="Texto">
 <button onclick="addMov()">Adicionar</button>
@@ -148,10 +150,9 @@ flex-wrap:wrap;
 <!-- TEXTURAS -->
 
 <div id="texPage" style="display:none;">
-<h2>Texturas</h2>
+<h1>Texturas</h1>
 
 <div id="adminTex" class="hidden">
-<input id="texName" placeholder="Nome">
 <input id="texFile" type="file">
 <input id="texText" placeholder="Texto">
 <button onclick="addTex()">Adicionar</button>
@@ -163,10 +164,9 @@ flex-wrap:wrap;
 <!-- MAPAS -->
 
 <div id="mapPage" style="display:none;">
-<h2>Mapas</h2>
+<h1>Mapas</h1>
 
 <div id="adminMap" class="hidden">
-<input id="mapName" placeholder="Nome">
 <input id="mapFile" type="file">
 <button onclick="addMap()">Adicionar</button>
 </div>
@@ -199,12 +199,14 @@ localStorage.setItem("maps",JSON.stringify(maps));
 }
 
 function login(){
-if(users[loginUser.value] && users[loginUser.value].pass===loginPass.value){
+let u=loginUser.value;
+let p=loginPass.value;
 
+if(users[u] && users[u].pass===p){
 loginArea.classList.add("hidden");
 siteArea.classList.remove("hidden");
 
-isAdmin = users[loginUser.value].role==="adm";
+isAdmin = users[u].role==="adm";
 
 if(isAdmin){
 adminMov.classList.remove("hidden");
@@ -228,16 +230,14 @@ save();
 info.innerText="Conta criada!";
 }
 
-function openPage(p){
+function openPage(id){
 movPage.style.display="none";
 texPage.style.display="none";
 mapPage.style.display="none";
-document.getElementById(p).style.display="block";
+document.getElementById(id).style.display="block";
 }
 
-search.oninput=renderAll;
-
-/* 🔥 RENDER */
+/* 🔍 SEARCH */
 function renderAll(){
 
 let s = search.value.toLowerCase();
@@ -246,10 +246,9 @@ movList.innerHTML="";
 texList.innerHTML="";
 mapList.innerHTML="";
 
-movs.filter(m=>m.name.toLowerCase().includes(s)).forEach((m,i)=>{
+movs.filter(m=>m.text.toLowerCase().includes(s)).forEach((m,i)=>{
 movList.innerHTML+=`
 <div class="card">
-<h3>${m.name}</h3>
 <img src="${m.img}">
 <div class="actions">
 <button onclick="copyText('${m.text}',this)">Copiar</button>
@@ -257,10 +256,9 @@ movList.innerHTML+=`
 </div>`;
 });
 
-texs.filter(t=>t.name.toLowerCase().includes(s)).forEach((t,i)=>{
+texs.filter(t=>t.text.toLowerCase().includes(s)).forEach((t,i)=>{
 texList.innerHTML+=`
 <div class="card">
-<h3>${t.name}</h3>
 <img src="${t.img}">
 <div class="actions">
 <button onclick="copyText('${t.text}',this)">Copiar</button>
@@ -268,76 +266,67 @@ texList.innerHTML+=`
 </div>`;
 });
 
-maps.filter(m=>m.name.toLowerCase().includes(s)).forEach((m,i)=>{
+maps.forEach((m,i)=>{
 mapList.innerHTML+=`
 <div class="card">
-<h3>${m.name}</h3>
 <img src="${m.img}">
 </div>`;
 });
 }
 
-/* 🔥 COPY */
-function copyText(t,b){
-navigator.clipboard.writeText(t);
-b.innerText="Copiado!";
-setTimeout(()=>b.innerText="Copiar",1500);
-}
-
-/* 🔥 ADD MOV */
+/* 🔥 CORRIGIDO (AQUI ESTAVA O ERRO) */
 function addMov(){
+if(!isAdmin)return;
+
 let file=document.getElementById("movFile").files[0];
 if(!file) return;
 
 let r=new FileReader();
 r.onload=e=>{
-movs.push({
-name:movName.value||"Sem nome",
-img:e.target.result,
-text:movText.value||""
-});
-save();renderAll();
+movs.push({img:e.target.result,text:movText.value});
+save();
+renderAll();
 }
 r.readAsDataURL(file);
 }
 
-/* 🔥 ADD TEX */
 function addTex(){
+if(!isAdmin)return;
+
 let file=document.getElementById("texFile").files[0];
 if(!file) return;
 
 let r=new FileReader();
 r.onload=e=>{
-texs.push({
-name:texName.value||"Sem nome",
-img:e.target.result,
-text:texText.value||""
-});
-save();renderAll();
+texs.push({img:e.target.result,text:texText.value});
+save();
+renderAll();
 }
 r.readAsDataURL(file);
 }
 
-/* 🔥 ADD MAP */
 function addMap(){
+if(!isAdmin)return;
+
 let file=document.getElementById("mapFile").files[0];
 if(!file) return;
 
 let r=new FileReader();
 r.onload=e=>{
-maps.push({
-name:mapName.value||"Sem nome",
-img:e.target.result
-});
-save();renderAll();
+maps.push({img:e.target.result});
+save();
+renderAll();
 }
 r.readAsDataURL(file);
+}
+
+function copyText(t,b){
+navigator.clipboard.writeText(t);
+b.innerText="Copiado!";
+setTimeout(()=>b.innerText="Copiar",1500);
 }
 </script>
 
 </body>
 </html>
-
-
-
 
